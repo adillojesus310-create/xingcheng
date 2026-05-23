@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📋 今日行程</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0d0d0d;
+  color: #e0e0e0;
+  min-height: 100vh;
+  padding: 0;
+}
+
+/* ── 顶部状态条 ── */
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.header h1 {
+  font-size: 20px;
+  font-weight: 600;
+  color: #f0f0f0;
+  letter-spacing: 0.5px;
+}
+
+.header .date-display {
+  font-size: 13px;
+  color: #888;
+}
+
+.header .lunar-display {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+}
+
+/* ── 位置卡片 ── */
+.location-card {
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+  margin: 12px 16px;
+  padding: 14px 16px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.location-icon {
+  width: 40px;
+  height: 40px;
+  background: #2a2a4a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.location-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.location-name {
+  font-size: 15px;
+  font-weight: 500;
+  color: #f0f0f0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.location-address {
+  font-size: 12px;
+  color: #666;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.location-time {
+  font-size: 11px;
+  color: #555;
+  margin-top: 1px;
+}
+
+/* ── 今日行程 ── */
+.section-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #888;
+  padding: 16px 20px 8px;
+  letter-spacing: 0.5px;
+}
+
+.timeline {
+  padding: 0 16px;
+}
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  padding: 10px 0;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 36px;
+  bottom: -10px;
+  width: 1px;
+  background: #2a2a4a;
+}
+
+.timeline-item:last-child::before {
+  display: none;
+}
+
+.timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2a2a4a;
+  border: 2px solid #3a3a5a;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.timeline-dot.current {
+  background: #4fc3f7;
+  border-color: #4fc3f7;
+  box-shadow: 0 0 8px rgba(79, 195, 247, 0.4);
+}
+
+.timeline-dot.done {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+.timeline-content {
+  flex: 1;
+  min-width: 0;
+}
+
+.timeline-time {
+  font-size: 12px;
+  color: #666;
+}
+
+.timeline-title {
+  font-size: 15px;
+  color: #e0e0e0;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.timeline-desc {
+  font-size: 13px;
+  color: #777;
+  margin-top: 2px;
+}
+
+/* ── 备注区 ── */
+.note-section {
+  margin: 16px;
+  padding: 14px 16px;
+  background: #141420;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+}
+
+.note-section-title {
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.note-content {
+  font-size: 14px;
+  color: #c0c0c0;
+  line-height: 1.6;
+}
+
+/* ── 底部 ── */
+.footer {
+  text-align: center;
+  padding: 24px 20px 40px;
+  font-size: 11px;
+  color: #444;
+}
+
+.footer a {
+  color: #4fc3f7;
+  text-decoration: none;
+}
+
+/* ── 管理员页面 ── */
+.admin-panel {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #141420;
+  border-top: 1px solid #2a2a4a;
+  padding: 16px 20px;
+  padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  z-index: 100;
+}
+
+.admin-panel.show {
+  display: block;
+}
+
+.admin-toggle {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  width: 48px;
+  height: 48px;
+  background: #1a1a2e;
+  border: 1px solid #3a3a5a;
+  border-radius: 50%;
+  color: #888;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 101;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.admin-toggle:active {
+  opacity: 1;
+}
+
+.admin-input {
+  width: 100%;
+  background: #1a1a2e;
+  border: 1px solid #3a3a5a;
+  border-radius: 8px;
+  color: #e0e0e0;
+  font-size: 14px;
+  padding: 10px 12px;
+  resize: none;
+  font-family: inherit;
+  margin-bottom: 10px;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: #4fc3f7;
+}
+
+.admin-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.admin-btn {
+  flex: 1;
+  padding: 10px;
+  border: 1px solid #3a3a5a;
+  border-radius: 8px;
+  background: #1a1a2e;
+  color: #c0c0c0;
+  font-size: 13px;
+  cursor: pointer;
+  text-align: center;
+}
+
+.admin-btn.primary {
+  background: #4fc3f7;
+  color: #000;
+  border-color: #4fc3f7;
+  font-weight: 500;
+}
+
+.admin-btn:active {
+  opacity: 0.7;
+}
+
+/* ── 状态标记 ── */
+.status-badge {
+  display: inline-block;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: #2a2a4a;
+  color: #888;
+  margin-left: 6px;
+}
+
+.status-badge.online {
+  background: #1b5e20;
+  color: #a5d6a7;
+}
+
+/* ── 空状态 ── */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #555;
+}
+
+.empty-state .emoji {
+  font-size: 40px;
+  margin-bottom: 12px;
+}
+
+.empty-state .text {
+  font-size: 14px;
+}
+
+/* ── 地图区域 ── */
+.map-container {
+  margin: 0 16px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  height: 180px;
+  position: relative;
+}
+
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+.map-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #555;
+  gap: 8px;
+}
+
+.map-placeholder .icon { font-size: 32px; }
+.map-placeholder .hint { font-size: 12px; }
+
+/* ── 分享提示 ── */
+.share-hint {
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 12px;
+  color: #555;
+}
+
+</style>
+</head>
+<body>
+
+<!-- 顶部 -->
+<div class="header">
+  <div class="header-top">
+    <h1>📋 今日行程</h1>
+    <div class="date-display" id="dateDisplay"></div>
+  </div>
+  <div class="lunar-display" id="lunarDisplay"></div>
+</div>
+
+<!-- 位置共享卡片 -->
+<div class="location-card" id="locationCard">
+  <div class="location-icon">📍</div>
+  <div class="location-info">
+    <div class="location-name" id="locationName">位置加载中...</div>
+    <div class="location-address" id="locationAddress">等待共享</div>
+    <div class="location-time" id="locationTime"></div>
+  </div>
+  <span class="status-badge" id="locationStatus">实时</span>
+</div>
+
+<!-- 地图区域 -->
+<div class="map-container" id="mapContainer">
+  <div id="map"></div>
+  <div class="map-placeholder" id="mapPlaceholder">
+    <div class="icon">🗺️</div>
+    <div class="hint">位置共享需要定位权限</div>
+  </div>
+</div>
+
+<!-- 行程时间线 -->
+<div class="section-title">⏰ 今日安排</div>
+<div class="timeline" id="timeline"></div>
+
+<!-- 今日备忘 -->
+<div class="note-section">
+  <div class="note-section-title">📝 备忘</div>
+  <div class="note-content" id="noteContent">暂无备忘录</div>
+</div>
+
+<div class="share-hint">
+  把此页面添加到桌面，随时打开查看
+</div>
+
+<div class="footer">
+  ❤️ &nbsp;·&nbsp; 给男朋友看的位置
+</div>
+
+<!-- 管理员按钮 -->
+<button class="admin-toggle" id="adminToggle" aria-label="管理员">✏️</button>
+
+<!-- 管理员面板 -->
+<div class="admin-panel" id="adminPanel">
+  <textarea class="admin-input" id="adminInput" rows="5" placeholder="更新行程&#10;格式示例：&#10;14:00-16:00 健身房 @ 万象城&#10;19:00 跟xx吃饭 @ 万达广场&#10;预计到家 21:30&#10;&#10;===&#10;备忘：记得带钥匙"></textarea>
+  <div class="admin-actions">
+    <button class="admin-btn primary" id="adminSave">更新</button>
+    <button class="admin-btn" id="adminCancel">取消</button>
+  </div>
+</div>
+
+<script>
+// ===== 工具函数 =====
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+  return `${y}年${m}月${day}日 星期${weekdays[d.getDay()]}`;
+}
+
+function formatTime(d) {
+  return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+}
+
+// ===== 存储键名 =====
+const STORAGE_KEY = 'hermes_schedule';
+const LOCATION_KEY = 'hermes_location';
+
+// ===== 默认示例数据 =====
+const DEFAULT_SCHEDULE = {
+  date: '2026-05-23',
+  items: [
+    { time: '14:00', title: '健身房', desc: '', done: false },
+    { time: '19:00', title: '跟朋友吃饭', desc: '@ 万象城', done: false },
+    { time: '21:30', title: '预计到家', desc: '', done: false }
+  ],
+  note: '今天周六，不用打卡'
+};
+
+// ===== 数据管理 =====
+function loadSchedule() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveSchedule(schedule) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(schedule));
+}
+
+function loadLocation() {
+  try {
+    const raw = localStorage.getItem(LOCATION_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  return null;
+}
+
+function saveLocation(loc) {
+  localStorage.setItem(LOCATION_KEY, JSON.stringify(loc));
+}
+
+// ===== 渲染行程 =====
+function renderSchedule(schedule) {
+  const container = document.getElementById('timeline');
+  if (!schedule || !schedule.items || schedule.items.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="emoji">📅</div><div class="text">今天暂无安排</div></div>';
+    return;
+  }
+
+  const now = new Date();
+  const currentTime = now.getHours() * 60 + now.getMinutes();
+
+  let html = '';
+  schedule.items.forEach((item, index) => {
+    const [h, m] = item.time.split(':').map(Number);
+    const itemMinutes = h * 60 + m;
+    let dotClass = 'timeline-dot';
+    if (item.done || itemMinutes + 60 < currentTime) {
+      dotClass += ' done';
+    } else if (Math.abs(itemMinutes - currentTime) <= 30) {
+      dotClass += ' current';
+    }
+
+    html += `
+      <div class="timeline-item">
+        <div class="${dotClass}"></div>
+        <div class="timeline-content">
+          <div class="timeline-time">${item.time}</div>
+          <div class="timeline-title">${item.title}</div>
+          ${item.desc ? `<div class="timeline-desc">${item.desc}</div>` : ''}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+// ===== 渲染位置 =====
+function renderLocation(loc) {
+  const nameEl = document.getElementById('locationName');
+  const addrEl = document.getElementById('locationAddress');
+  const timeEl = document.getElementById('locationTime');
+  const statusEl = document.getElementById('locationStatus');
+
+  if (!loc) {
+    nameEl.textContent = '位置未共享';
+    addrEl.textContent = '点击下方按钮开始共享';
+    timeEl.textContent = '';
+    statusEl.className = 'status-badge';
+    statusEl.textContent = '离线';
+    return;
+  }
+
+  nameEl.textContent = loc.name || '未知位置';
+  addrEl.textContent = loc.address || '';
+  timeEl.textContent = loc.time ? '更新于 ' + loc.time : '';
+  statusEl.className = 'status-badge online';
+  statusEl.textContent = '在线';
+}
+
+// ===== 更新日期 =====
+document.getElementById('dateDisplay').textContent = todayStr();
+document.getElementById('lunarDisplay').textContent = '农历四月廿六';
+
+// ===== 初始加载 =====
+let currentSchedule = loadSchedule();
+if (currentSchedule) {
+  renderSchedule(currentSchedule);
+  if (currentSchedule.note) {
+    document.getElementById('noteContent').textContent = currentSchedule.note;
+  }
+} else {
+  // 用默认数据
+  currentSchedule = DEFAULT_SCHEDULE;
+  saveSchedule(currentSchedule);
+  renderSchedule(currentSchedule);
+  document.getElementById('noteContent').textContent = currentSchedule.note;
+}
+
+let currentLocation = loadLocation();
+renderLocation(currentLocation);
+
+// ===== 地图（使用 Leaflet 或简单展示） =====
+function initMap(loc) {
+  const placeholder = document.getElementById('mapPlaceholder');
+  const mapEl = document.getElementById('map');
+
+  if (!loc || !loc.lat || !loc.lng) {
+    placeholder.style.display = 'flex';
+    return;
+  }
+
+  placeholder.style.display = 'none';
+
+  // 使用 OpenStreetMap + Leaflet
+  if (typeof L !== 'undefined') {
+    // Leaflet 已加载
+    const map = L.map('map', { zoomControl: false }).setView([loc.lat, loc.lng], 15);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OSM',
+      maxZoom: 18
+    }).addTo(map);
+    L.marker([loc.lat, loc.lng]).addTo(map);
+  } else {
+    // 尚未加载 Leaflet，显示静态文本
+    mapEl.innerHTML = `<div style="padding:20px;text-align:center;color:#666;font-size:13px;">
+      🗺️ 位置: ${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}
+    </div>`;
+  }
+}
+
+// 尝试加载 Leaflet（如果可用）
+const leafletScript = document.createElement('script');
+leafletScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+leafletScript.onload = function() {
+  // Leaflet CSS
+  const link = document.createElement('link');
+  link.rel = 'stylesheet';
+  link.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+  document.head.appendChild(link);
+  initMap(currentLocation);
+};
+leafletScript.onerror = function() {
+  initMap(currentLocation); // fallback
+};
+document.head.appendChild(leafletScript);
+
+// ===== 管理面板 =====
+const adminToggle = document.getElementById('adminToggle');
+const adminPanel = document.getElementById('adminPanel');
+const adminInput = document.getElementById('adminInput');
+const adminSave = document.getElementById('adminSave');
+const adminCancel = document.getElementById('adminCancel');
+
+let adminVisible = false;
+
+adminToggle.addEventListener('click', function() {
+  adminVisible = !adminVisible;
+  adminPanel.classList.toggle('show', adminVisible);
+  if (adminVisible) {
+    // 加载当前数据到输入框
+    const sch = loadSchedule();
+    if (sch && sch.items) {
+      const lines = sch.items.map(i => `${i.time} ${i.title}${i.desc ? ' ' + i.desc : ''}`);
+      if (sch.note) {
+        lines.push('', '===', sch.note);
+      }
+      adminInput.value = lines.join('\n');
+    }
+    adminInput.focus();
+    adminToggle.textContent = '✕';
+  } else {
+    adminToggle.textContent = '✏️';
+  }
+});
+
+adminSave.addEventListener('click', function() {
+  const text = adminInput.value.trim();
+  if (!text) return;
+
+  const lines = text.split('\n');
+  const items = [];
+  let note = '';
+
+  let inNote = false;
+  for (const line of lines) {
+    const t = line.trim();
+    if (!t) continue;
+    if (t === '===') {
+      inNote = true;
+      continue;
+    }
+    if (inNote) {
+      note = (note ? note + '\n' : '') + t;
+      continue;
+    }
+
+    // 解析时间+标题+描述
+    const timeMatch = t.match(/^(\d{1,2}:\d{2})(?:\s*-\s*\d{1,2}:\d{2})?\s+(.+)/);
+    if (timeMatch) {
+      items.push({
+        time: timeMatch[1],
+        title: timeMatch[2].split(' @')[0].trim(),
+        desc: timeMatch[2].includes('@') ? '@' + timeMatch[2].split('@')[1].trim() : '',
+        done: false
+      });
+    } else {
+      // 尝试匹配"预计到家 XX:XX"
+      const homeMatch = t.match(/预计到家\s*(\d{1,2}:\d{2})/);
+      if (homeMatch) {
+        items.push({ time: homeMatch[1], title: '预计到家', desc: '', done: false });
+      }
+    }
+  }
+
+  if (items.length === 0) {
+    alert('请输入有效行程格式，例如：\n14:00 健身房\n19:00 吃饭 @ 万达');
+    return;
+  }
+
+  const today = new Date();
+  const dateStr = today.getFullYear() + '-' +
+    String(today.getMonth()+1).padStart(2,'0') + '-' +
+    String(today.getDate()).padStart(2,'0');
+
+  const schedule = { date: dateStr, items, note };
+  saveSchedule(schedule);
+  currentSchedule = schedule;
+  renderSchedule(schedule);
+  document.getElementById('noteContent').textContent = note || '暂无备忘录';
+
+  // 关闭面板
+  adminVisible = false;
+  adminPanel.classList.remove('show');
+  adminToggle.textContent = '✏️';
+});
+
+adminCancel.addEventListener('click', function() {
+  adminVisible = false;
+  adminPanel.classList.remove('show');
+  adminToggle.textContent = '✏️';
+});
+
+// ===== 位置共享（浏览器 Geo API） =====
+let watchId = null;
+
+function startLocationShare() {
+  if (!navigator.geolocation) {
+    alert('当前浏览器不支持位置共享');
+    return;
+  }
+
+  function onPosition(pos) {
+    const loc = {
+      lat: pos.coords.latitude,
+      lng: pos.coords.longitude,
+      accuracy: pos.coords.accuracy,
+      time: formatTime(new Date()),
+      name: '当前位置',
+      address: `精度 ±${Math.round(pos.coords.accuracy)}米`
+    };
+
+    saveLocation(loc);
+    currentLocation = loc;
+    renderLocation(loc);
+    initMap(loc);
+  }
+
+  function onError(err) {
+    console.warn('位置获取失败:', err.message);
+    document.getElementById('locationName').textContent = '位置获取失败';
+    document.getElementById('locationAddress').textContent = '请检查定位权限';
+  }
+
+  // 先获取一次
+  navigator.geolocation.getCurrentPosition(onPosition, onError, {
+    enableHighAccuracy: true,
+    timeout: 10000
+  });
+
+  // 持续监听
+  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+    enableHighAccuracy: true,
+    timeout: 30000,
+    maximumAge: 30000
+  });
+}
+
+// 按钮触发位置共享（需要用户交互）
+adminToggle.addEventListener('dblclick', function() {
+  if (!watchId) {
+    startLocationShare();
+    document.getElementById('locationAddress').textContent = '位置共享已开启';
+  }
+});
+
+// 页面可见时检查是否已有位置数据
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) {
+    // 刷新显示
+    const sch = loadSchedule();
+    if (sch) {
+      renderSchedule(sch);
+      if (sch.note) document.getElementById('noteContent').textContent = sch.note;
+    }
+    const loc = loadLocation();
+    if (loc) renderLocation(loc);
+    document.getElementById('dateDisplay').textContent = todayStr();
+  }
+});
+
+// 如果在 HTTPS 或 localhost 环境中，自动请求位置
+if (window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+  setTimeout(() => {
+    if (!currentLocation) {
+      startLocationShare();
+    }
+  }, 2000);
+}
+
+console.log('📋 行程小程序已加载');
+console.log('💡 双击右下角✏️按钮可开启位置共享');
+console.log('💡 点击✏️按钮可更新行程');
+</script>
+</body>
+</html>
