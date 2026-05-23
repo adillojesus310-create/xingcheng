@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>📍 她的行程</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+  background: #0d0d0d;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.header {
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  padding: 20px 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.header h1 { font-size: 20px; font-weight: 600; color: #f0f0f0; letter-spacing: 0.5px; }
+.header .subtitle { font-size: 12px; color: #666; }
+
+.section-title {
+  font-size: 14px; font-weight: 500; color: #888;
+  padding: 16px 20px 8px; letter-spacing: 0.5px;
+}
+
+/* 位置卡片 */
+.location-card {
+  background: linear-gradient(135deg, #1a1a2e, #1e1e3a);
+  border: 1px solid #2a2a4a;
+  border-radius: 16px;
+  margin: 12px 16px;
+  padding: 18px 20px;
+}
+
+.loc-main { display: flex; align-items: flex-start; gap: 14px; }
+
+.loc-icon {
+  width: 48px; height: 48px;
+  background: #2a2a4a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  flex-shrink: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(79, 195, 247, 0); }
+}
+
+.loc-info { flex: 1; min-width: 0; }
+
+.loc-name {
+  font-size: 16px;
+  font-weight: 500;
+  color: #f0f0f0;
+}
+
+.loc-addr {
+  font-size: 13px;
+  color: #777;
+  margin-top: 4px;
+}
+
+.loc-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.loc-time {
+  font-size: 11px;
+  color: #555;
+}
+
+.loc-badge {
+  display: inline-block;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 8px;
+}
+
+.loc-badge.online { background: #1b5e20; color: #a5d6a7; }
+.loc-badge.offline { background: #3e2723; color: #ef9a9a; }
+
+.loc-coords {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #0d0d0d;
+  border-radius: 10px;
+  font-size: 12px;
+  color: #555;
+  font-family: monospace;
+  text-align: center;
+  letter-spacing: 1px;
+}
+
+/* 地图 */
+.map-box {
+  margin: 8px 16px 12px;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 200px;
+  background: #1a1a2e;
+  border: 1px solid #2a2a4a;
+  position: relative;
+}
+
+.map-box iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+
+.map-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #555;
+  gap: 10px;
+}
+
+.map-placeholder .icon { font-size: 36px; }
+.map-placeholder .hint { font-size: 13px; color: #666; }
+
+/* 行程时间线 */
+.timeline { padding: 0 16px; }
+
+.timeline-item {
+  display: flex;
+  gap: 14px;
+  padding: 12px 0;
+  position: relative;
+}
+
+.timeline-item::before {
+  content: '';
+  position: absolute;
+  left: 7px;
+  top: 38px;
+  bottom: -12px;
+  width: 1px;
+  background: #2a2a4a;
+}
+
+.timeline-item:last-child::before { display: none; }
+
+.timeline-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #2a2a4a;
+  border: 2px solid #3a3a5a;
+  flex-shrink: 0;
+  margin-top: 3px;
+}
+
+.timeline-dot.current {
+  background: #4fc3f7;
+  border-color: #4fc3f7;
+  box-shadow: 0 0 12px rgba(79, 195, 247, 0.5);
+}
+
+.timeline-dot.done {
+  background: #4caf50;
+  border-color: #4caf50;
+}
+
+.timeline-content { flex: 1; min-width: 0; }
+.timeline-time { font-size: 13px; color: #666; }
+.timeline-title { font-size: 16px; color: #e0e0e0; font-weight: 500; margin-top: 2px; }
+.timeline-desc { font-size: 13px; color: #777; margin-top: 2px; }
+
+/* 备忘 */
+.note-section {
+  margin: 16px;
+  padding: 14px 16px;
+  background: #141420;
+  border: 1px solid #2a2a4a;
+  border-radius: 12px;
+}
+
+.note-section-title { font-size: 13px; color: #666; margin-bottom: 8px; }
+.note-content { font-size: 14px; color: #c0c0c0; line-height: 1.6; }
+
+/* 空状态 */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: #555;
+}
+
+.empty-state .emoji { font-size: 40px; margin-bottom: 12px; }
+.empty-state .text { font-size: 14px; }
+
+/* 刷新提示 */
+.refresh-bar {
+  text-align: center;
+  padding: 8px 16px;
+  font-size: 11px;
+  color: #444;
+}
+
+.footer {
+  text-align: center;
+  padding: 24px 20px 40px;
+  font-size: 11px;
+  color: #444;
+}
+
+/* 加载 */
+.loading {
+  text-align: center;
+  padding: 60px 20px;
+  color: #555;
+}
+
+.loading .spinner { font-size: 32px; margin-bottom: 12px; }
+.loading .text { font-size: 14px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <h1>📍 她的行程</h1>
+    <div class="date-display" id="dateDisplay"></div>
+  </div>
+  <div class="subtitle">实时查看她的位置和今日安排</div>
+</div>
+
+<div id="loading" class="loading">
+  <div class="spinner">⏳</div>
+  <div class="text">正在加载...</div>
+</div>
+
+<div id="mainContent" style="display:none;">
+
+  <!-- 位置卡片 -->
+  <div class="location-card" id="locationCard">
+    <div class="loc-main">
+      <div class="loc-icon">📍</div>
+      <div class="loc-info">
+        <div class="loc-name" id="locName">位置未共享</div>
+        <div class="loc-addr" id="locAddr">暂无位置信息</div>
+        <div class="loc-meta">
+          <span class="loc-time" id="locTime"></span>
+          <span class="loc-badge offline" id="locBadge">离线</span>
+        </div>
+      </div>
+    </div>
+    <div class="loc-coords" id="locCoords">--</div>
+  </div>
+
+  <!-- 地图 -->
+  <div class="map-box" id="mapBox">
+    <div class="map-placeholder" id="mapPlaceholder">
+      <div class="icon">🗺️</div>
+      <div class="hint">等待位置共享</div>
+    </div>
+    <iframe id="mapFrame" style="display:none;" allowfullscreen loading="lazy"></iframe>
+  </div>
+
+  <!-- 今日安排 -->
+  <div class="section-title">⏰ 今日安排</div>
+  <div class="timeline" id="timeline"></div>
+
+  <!-- 备忘 -->
+  <div class="note-section">
+    <div class="note-section-title">📝 备忘</div>
+    <div class="note-content" id="noteContent">暂无备忘录</div>
+  </div>
+
+</div>
+
+<div class="refresh-bar" id="refreshBar">
+  自动刷新中 · 最后更新: <span id="lastUpdate">--</span>
+</div>
+
+<div class="footer">❤️</div>
+
+<script>
+// ===== 解析数据（从 GitHub Raw 读取） =====
+const GITHUB_OWNER = 'adillojesus310-create';
+const GITHUB_REPO = 'xingcheng';
+const DATA_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/master/data.json`;
+
+let cachedData = null;
+
+async function fetchData() {
+  try {
+    const resp = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    cachedData = data;
+    return data;
+  } catch(e) {
+    console.warn('获取数据失败:', e.message);
+    return cachedData; // 用缓存
+  }
+}
+
+// ===== 工具 =====
+function todayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth()+1).padStart(2,'0');
+  const day = String(d.getDate()).padStart(2,'0');
+  const w = ['日','一','二','三','四','五','六'];
+  return `${y}年${m}月${day}日 星期${w[d.getDay()]}`;
+}
+
+// ===== 渲染 =====
+function render(data) {
+  const loading = document.getElementById('loading');
+  const main = document.getElementById('mainContent');
+  const lastUpdate = document.getElementById('lastUpdate');
+
+  if (!data) {
+    loading.style.display = 'block';
+    main.style.display = 'none';
+    return;
+  }
+
+  loading.style.display = 'none';
+  main.style.display = 'block';
+
+  const now = new Date();
+  lastUpdate.textContent = formatTime(now);
+
+  // 位置
+  const loc = data.loc;
+  if (loc && loc.lat) {
+    document.getElementById('locName').textContent = '当前在线';
+    document.getElementById('locAddr').textContent = `精度 ±${Math.round(loc.accuracy)}米`;
+    document.getElementById('locTime').textContent = '更新于 ' + (loc.time || '--');
+    document.getElementById('locBadge').className = 'loc-badge online';
+    document.getElementById('locBadge').textContent = '在线';
+    document.getElementById('locCoords').textContent = `${loc.lat.toFixed(6)}, ${loc.lng.toFixed(6)}`;
+
+    // 地图 - 使用 OpenStreetMap
+    const mapPlaceholder = document.getElementById('mapPlaceholder');
+    const mapFrame = document.getElementById('mapFrame');
+    mapPlaceholder.style.display = 'none';
+    mapFrame.style.display = 'block';
+    mapFrame.src = `https://www.openstreetmap.org/export/embed.html?bbox=${loc.lng-0.005},${loc.lat-0.005},${loc.lng+0.005},${loc.lat+0.005}&layer=mapnik&marker=${loc.lat},${loc.lng}`;
+  } else {
+    document.getElementById('locName').textContent = '位置未共享';
+    document.getElementById('locAddr').textContent = '暂无位置信息';
+    document.getElementById('locTime').textContent = '';
+    document.getElementById('locBadge').className = 'loc-badge offline';
+    document.getElementById('locBadge').textContent = '离线';
+    document.getElementById('locCoords').textContent = '--';
+    document.getElementById('mapPlaceholder').style.display = 'flex';
+    document.getElementById('mapFrame').style.display = 'none';
+  }
+
+  // 行程
+  const timeline = document.getElementById('timeline');
+  if (data.items && data.items.length > 0) {
+    const currentTime = now.getHours() * 60 + now.getMinutes();
+    let html = '';
+    data.items.forEach(item => {
+      const [h, m] = item.time.split(':').map(Number);
+      const itemMin = h * 60 + m;
+      let dotClass = 'timeline-dot';
+      if (item.done || itemMin + 60 < currentTime) dotClass += ' done';
+      else if (Math.abs(itemMin - currentTime) <= 30) dotClass += ' current';
+
+      html += `
+        <div class="timeline-item">
+          <div class="${dotClass}"></div>
+          <div class="timeline-content">
+            <div class="timeline-time">${item.time}</div>
+            <div class="timeline-title">${item.title}</div>
+            ${item.desc ? `<div class="timeline-desc">${item.desc}</div>` : ''}
+          </div>
+        </div>
+      `;
+    });
+    timeline.innerHTML = html;
+  } else {
+    timeline.innerHTML = '<div class="empty-state"><div class="emoji">📅</div><div class="text">今天暂无安排</div></div>';
+  }
+
+  // 备忘
+  document.getElementById('noteContent').textContent = data.note || '暂无备忘录';
+  document.getElementById('dateDisplay').textContent = todayStr();
+}
+
+function formatTime(d) {
+  return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0');
+}
+
+// ===== 自动轮询 =====
+var isFirstLoad = true;
+
+async function poll() {
+  const data = await fetchData();
+  render(data);
+  isFirstLoad = false;
+  setTimeout(poll, 3000); // 每3秒刷新一次
+}
+
+// ===== 初始化 =====
+document.getElementById('dateDisplay').textContent = todayStr();
+poll();
+
+console.log('📍 查看端已加载');
+console.log('💡 链接分享给男友即可实时查看');
+</script>
+</body>
+</html>
