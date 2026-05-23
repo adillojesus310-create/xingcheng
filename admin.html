@@ -302,6 +302,26 @@ function formatTime(d) { return String(d.getHours()).padStart(2,'0')+':'+String(
 // ===== 加载 config.js 中的 token =====
 // config.js 声明了 GITHUB_TOKEN_FROM_CONFIG 变量
 
+// 尝试从配置文件读取 token，如果没有则弹窗让用户输入
+function initToken() {
+  let token = '';
+  try {
+    if (typeof GITHUB_TOKEN_FROM_CONFIG !== 'undefined') token = GITHUB_TOKEN_FROM_CONFIG;
+  } catch(e) {}
+  if (!token) {
+    try { token = localStorage.getItem('gh_token') || ''; } catch(e) {}
+  }
+  if (!token) {
+    token = prompt('请输入 GitHub Token（首次使用需要）：\nhttps://github.com/settings/tokens');
+    if (token) {
+      try { localStorage.setItem('gh_token', token); } catch(e) {}
+    }
+  }
+  return token;
+}
+
+let ghToken = initToken();
+
 // ===== 数据管理 =====
 // 数据通过 GitHub Raw 共享：admin 写入 data.json，view 从 GitHub Raw 读取
 
@@ -335,9 +355,7 @@ async function setData(d) {
 }
 
 function getGitHubToken() {
-  // 从 config.js 或 localStorage 获取
-  if (typeof GITHUB_TOKEN_FROM_CONFIG !== 'undefined') return GITHUB_TOKEN_FROM_CONFIG;
-  try { return localStorage.getItem('gh_token') || ''; } catch(e) { return ''; }
+  return ghToken || initToken() || '';
 }
 
 async function pushToGithub(data) {
