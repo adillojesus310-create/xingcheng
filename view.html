@@ -310,6 +310,11 @@ async function fetchData() {
     return data;
   } catch(e) {
     console.warn('获取数据失败:', e.message);
+    // 首次加载失败：自动创建默认空数据，避免永远卡在"加载中"
+    if (cachedData === null) {
+      cachedData = { items: [], note: '暂无备忘录', loc: null };
+      return cachedData;
+    }
     return cachedData; // 用缓存
   }
 }
