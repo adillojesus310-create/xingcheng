@@ -1,1 +1,17 @@
-{"items":[{"time":"14:00","title":"下午行程","desc":"","done":false}],"note":"今天暂无备忘","loc":null}
+{
+  "items": [
+    {
+      "time": "14:30",
+      "title": "咖啡厅",
+      "desc": "@ 星巴克",
+      "done": false
+    }
+  ],
+  "note": "今天约会",
+  "loc": {
+    "lat": 34.6843196,
+    "lng": 112.4152315,
+    "accuracy": 31.200000762939453,
+    "time": "15:37"
+  }
+}
