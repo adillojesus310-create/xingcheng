@@ -4,149 +4,25 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>📋 行程管理</title>
+<link rel="stylesheet" href="common.css">
 <style>
-* { margin: 0; padding: 0; box-sizing: border-box; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-  background: #0d0d0d;
-  color: #e0e0e0;
-  min-height: 100vh;
-}
-
-.header {
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-  padding: 20px 20px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-}
-
-.header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-.header h1 { font-size: 20px; font-weight: 600; color: #f0f0f0; letter-spacing: 0.5px; }
-.header .date-display { font-size: 13px; color: #888; }
-
-.section-title {
-  font-size: 14px; font-weight: 500; color: #888;
-  padding: 16px 20px 8px; letter-spacing: 0.5px;
-}
-
-/* 位置状态 */
-.location-card {
-  background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px;
-  margin: 12px 16px; padding: 14px 16px;
-}
-
-.loc-status {
-  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
-}
-
-.loc-icon {
-  width: 36px; height: 36px; background: #2a2a4a; border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  font-size: 18px; flex-shrink: 0;
-}
-
-.loc-info { flex: 1; min-width: 0; }
-.loc-name { font-size: 14px; color: #e0e0e0; }
-.loc-addr { font-size: 12px; color: #666; margin-top: 2px; }
-.loc-time { font-size: 11px; color: #555; }
-
-.loc-badge {
-  display: inline-block; font-size: 11px; padding: 3px 10px;
-  border-radius: 10px; flex-shrink: 0;
-}
-
-.loc-badge.active { background: #1b5e20; color: #a5d6a7; }
-.loc-badge.inactive { background: #3e2723; color: #ef9a9a; }
-
-.loc-coords {
-  font-size: 11px; color: #555; text-align: center;
-  padding: 6px; background: #0d0d0d; border-radius: 8px;
-  margin-top: 6px; font-family: monospace; letter-spacing: 1px;
-}
-
-.loc-actions { display: flex; gap: 8px; margin-top: 10px; }
-.loc-btn {
-  flex: 1; padding: 8px; border: 1px solid #3a3a5a; border-radius: 8px;
-  background: #1a1a2e; color: #c0c0c0; font-size: 13px; cursor: pointer; text-align: center;
-}
-.loc-btn.primary { background: #4fc3f7; color: #000; border-color: #4fc3f7; font-weight: 500; }
-.loc-btn.danger { background: #c62828; color: #fff; border-color: #c62828; }
-.loc-btn:active { opacity: 0.7; }
-
-/* 行程编辑 */
-.timeline { padding: 0 16px; }
-.timeline-item {
-  display: flex; gap: 14px; padding: 10px 0; position: relative; align-items: flex-start;
-}
-.timeline-item::before {
-  content: ''; position: absolute; left: 7px; top: 36px; bottom: -10px;
-  width: 1px; background: #2a2a4a;
-}
-.timeline-item:last-child::before { display: none; }
-
-.timeline-dot {
-  width: 16px; height: 16px; border-radius: 50%; background: #2a2a4a;
-  border: 2px solid #3a3a5a; flex-shrink: 0; margin-top: 2px;
-}
-.timeline-dot.active { background: #4fc3f7; border-color: #4fc3f7; box-shadow: 0 0 8px rgba(79,195,247,0.4); }
-.timeline-done { background: #4caf50; border-color: #4caf50; }
-
-.timeline-content { flex: 1; min-width: 0; }
-.timeline-time { font-size: 12px; color: #666; }
-.timeline-title { font-size: 15px; color: #e0e0e0; font-weight: 500; margin-top: 2px; }
-.timeline-desc { font-size: 13px; color: #777; margin-top: 2px; }
-.timeline-del {
-  font-size: 16px; color: #555; cursor: pointer; padding: 4px 8px;
-  flex-shrink: 0; align-self: center; line-height: 1;
-}
-
-/* 编辑区 */
+/* admin 专有样式 */
 .edit-section {
   margin: 16px; background: #141420; border: 1px solid #2a2a4a;
   border-radius: 12px; overflow: hidden;
 }
-
-.edit-tabs {
-  display: flex; border-bottom: 1px solid #2a2a4a;
-}
-
+.edit-tabs { display: flex; border-bottom: 1px solid #2a2a4a; }
 .edit-tab {
   flex: 1; padding: 10px; text-align: center; font-size: 13px;
   color: #666; cursor: pointer; border-bottom: 2px solid transparent;
 }
-
 .edit-tab.active { color: #4fc3f7; border-bottom-color: #4fc3f7; }
-
 .edit-panel { padding: 12px; display: none; }
 .edit-panel.active { display: block; }
 
-.edit-input {
-  width: 100%; background: #1a1a2e; border: 1px solid #3a3a5a;
-  border-radius: 8px; color: #e0e0e0; font-size: 14px;
-  padding: 10px 12px; resize: none; font-family: inherit;
-  margin-bottom: 10px;
-}
-
-.edit-input:focus { outline: none; border-color: #4fc3f7; }
-
-.add-row {
-  display: flex; gap: 8px; margin-bottom: 8px;
-}
-
-.add-row .time-input {
-  width: 70px; flex-shrink: 0; background: #1a1a2e;
-  border: 1px solid #3a3a5a; border-radius: 8px; color: #e0e0e0;
-  font-size: 14px; padding: 10px 8px; text-align: center;
-}
-
-.add-row .text-input {
-  flex: 1; background: #1a1a2e; border: 1px solid #3a3a5a;
-  border-radius: 8px; color: #e0e0e0; font-size: 14px; padding: 10px;
-}
-
-.add-row input:focus { outline: none; border-color: #4fc3f7; }
+.add-row { display: flex; gap: 8px; margin-bottom: 8px; }
+.add-row .time-input { width: 70px; flex-shrink: 0; text-align: center; }
+.add-row .text-input { flex: 1; }
 
 .add-btn {
   width: 100%; padding: 10px; border: 1px dashed #3a3a5a;
@@ -154,23 +30,9 @@ body {
   color: #555; font-size: 13px; cursor: pointer; text-align: center;
   margin-bottom: 8px;
 }
-
 .add-btn:active { border-color: #4fc3f7; color: #4fc3f7; }
 
-.save-btn {
-  width: 100%; padding: 12px; border: none; border-radius: 8px;
-  background: #4fc3f7; color: #000; font-size: 15px;
-  font-weight: 600; cursor: pointer; text-align: center;
-}
-
-.save-btn:active { opacity: 0.7; }
-
-/* 备忘 */
-.note-section {
-  margin: 16px; padding: 14px 16px;
-  background: #141420; border: 1px solid #2a2a4a; border-radius: 12px;
-}
-.note-section-title { font-size: 13px; color: #666; margin-bottom: 8px; }
+.loc-actions { display: flex; gap: 8px; margin-top: 10px; }
 
 .log-section {
   margin: 0 16px 16px; background: #141420; border: 1px solid #2a2a4a;
@@ -180,30 +42,22 @@ body {
 .log-title { font-size: 12px; color: #555; margin-bottom: 6px; cursor: pointer; }
 .log-entry { font-size: 11px; color: #444; padding: 2px 0; font-family: monospace; }
 
-.footer { text-align: center; padding: 24px 20px 40px; font-size: 11px; color: #444; }
-
-.share-hint {
-  text-align: center; padding: 8px 16px; font-size: 12px; color: #555;
-}
-
 .share-link {
   margin: 12px 16px; padding: 12px 16px;
   background: #1a1a2e; border: 1px solid #2a2a4a; border-radius: 12px;
   display: flex; align-items: center; gap: 10px;
 }
-
 .share-link input {
   flex: 1; background: transparent; border: none; color: #4fc3f7;
-  font-size: 12px; font-family: monospace; outline: none;
-  min-width: 0;
+  font-size: 12px; font-family: monospace; outline: none; min-width: 0;
 }
-
 .share-link .copy-btn {
   flex-shrink: 0; padding: 6px 14px; border: 1px solid #4fc3f7;
   border-radius: 6px; color: #4fc3f7; font-size: 12px;
   cursor: pointer; background: transparent;
 }
 
+.share-hint { text-align: center; padding: 8px 16px; font-size: 12px; color: #555; }
 </style>
 </head>
 <body>
@@ -224,8 +78,8 @@ body {
 
 <!-- 位置共享 -->
 <div class="location-card">
-  <div class="loc-status">
-    <div class="loc-icon">📍</div>
+  <div class="loc-row">
+    <div class="loc-icon sm">📍</div>
     <div class="loc-info">
       <div class="loc-name" id="locName">尚未获取位置</div>
       <div class="loc-addr" id="locAddr">点击"开始共享"</div>
@@ -235,8 +89,8 @@ body {
   </div>
   <div class="loc-coords" id="locCoords">--</div>
   <div class="loc-actions">
-    <button class="loc-btn primary" id="startShare">📍 开始共享位置</button>
-    <button class="loc-btn danger" id="stopShare" style="display:none;">停止</button>
+    <button class="btn primary" style="flex:1;" id="startShare">📍 开始共享位置</button>
+    <button class="btn danger" style="flex:1;display:none;" id="stopShare">停止</button>
   </div>
 </div>
 
@@ -247,11 +101,10 @@ body {
     <div class="edit-tab" data-tab="full">编辑全部</div>
   </div>
 
-  <!-- 快速添加 -->
   <div class="edit-panel active" id="panel-quick">
     <div class="add-row">
-      <input type="text" class="time-input" id="quickTime" placeholder="14:00" value="">
-      <input type="text" class="text-input" id="quickTitle" placeholder="事件 (如: 健身房 @ 万象城)">
+      <input type="text" class="input-base time-input" id="quickTime" placeholder="14:00">
+      <input type="text" class="input-base text-input" id="quickTitle" placeholder="事件 (如: 健身房 @ 万象城)">
     </div>
     <button class="add-btn" id="addQuickItem">+ 添加到行程</button>
 
@@ -259,447 +112,230 @@ body {
     <div id="quickList"></div>
 
     <div style="margin-top:8px;">
-      <input type="text" style="width:100%;background:#1a1a2e;border:1px solid #3a3a5a;border-radius:8px;color:#e0e0e0;font-size:14px;padding:10px 12px;" id="quickNote" placeholder="备忘 (如: 记得带钥匙)">
+      <input type="text" class="input-base block" id="quickNote" placeholder="备忘 (如: 记得带钥匙)">
     </div>
 
-    <button class="save-btn" id="quickSave" style="margin-top:10px;">💾 保存行程</button>
+    <button class="btn primary lg block" id="quickSave" style="margin-top:10px;">💾 保存行程</button>
   </div>
 
-  <!-- 编辑全部 -->
   <div class="edit-panel" id="panel-full">
-    <textarea class="edit-input" id="fullInput" rows="7" placeholder="格式：&#10;14:00 健身房 @ 万象城&#10;19:00 吃饭 @ 万达&#10;21:30 预计到家&#10;&#10;===&#10;备忘：记得带钥匙"></textarea>
-    <button class="save-btn" id="fullSave">💾 保存全部</button>
+    <textarea class="input-base area block" id="fullInput" rows="7" placeholder="格式：&#10;14:00 健身房 @ 万象城&#10;19:00 吃饭 @ 万达&#10;21:30 预计到家&#10;&#10;===&#10;备忘：记得带钥匙" style="margin-bottom:10px;"></textarea>
+    <button class="btn primary lg block" id="fullSave">💾 保存全部</button>
   </div>
 </div>
 
-<!-- 日志 -->
 <div class="log-section" id="logSection">
   <div class="log-title" id="logToggle">📋 同步日志 (点击展开)</div>
   <div id="logContent"></div>
 </div>
 
-<div class="share-hint">
-  男朋友打开查看端链接就能看到你的位置和行程
-</div>
+<div class="share-hint">男朋友打开查看端链接就能看到你的位置和行程</div>
+<div class="footer">❤️ 行程小助手</div>
 
-<div class="footer">
-  ❤️ 行程小助手
-</div>
-
+<script src="config.js"></script>
+<script src="common.js"></script>
 <script>
-// ===== 工具函数 =====
-function todayStr() {
-  const d = new Date();
-  const y = d.getFullYear();
-  const m = String(d.getMonth()+1).padStart(2,'0');
-  const day = String(d.getDate()).padStart(2,'0');
-  const w = ['日','一','二','三','四','五','六'];
-  return `${y}年${m}月${day}日 星期${w[d.getDay()]}`;
-}
+const U = window.HermesUtil;
+const $ = id => document.getElementById(id);
 
-function formatTime(d) { return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'); }
+// ===== 数据状态 =====
+let state = { items: [], note: '', loc: null };
 
-// ===== 加载 config.js 中的 token =====
-// config.js 声明了 GITHUB_TOKEN_FROM_CONFIG 变量
-
-// 尝试从配置文件读取 token，如果没有则弹窗让用户输入
-function initToken() {
-  let token = '';
-  try {
-    if (typeof GITHUB_TOKEN_FROM_CONFIG !== 'undefined') token = GITHUB_TOKEN_FROM_CONFIG;
-  } catch(e) {}
-  if (!token) {
-    try { token = localStorage.getItem('gh_token') || ''; } catch(e) {}
-  }
-  if (!token) {
-    token = prompt('请输入 GitHub Token（首次使用需要）：\nhttps://github.com/settings/tokens');
-    if (token) {
-      try { localStorage.setItem('gh_token', token); } catch(e) {}
-    }
-  }
-  return token;
-}
-
-let ghToken = initToken();
-
-// ===== 数据管理 =====
-// 数据通过 GitHub Raw 共享：admin 写入 data.json，view 从 GitHub Raw 读取
-
-const GITHUB_OWNER = 'adillojesus310-create';
-const GITHUB_REPO = 'xingcheng';
-const DATA_URL = `https://raw.githubusercontent.com/${GITHUB_OWNER}/${GITHUB_REPO}/master/data.json`;
-/* GITHUB_TOKEN handled via config.js */
-
-// 本地缓存（离线也能用）
-let localData = null;
-
-function loadSavedData() {
-  try {
-    const raw = localStorage.getItem('admin_data');
-    if (raw) return JSON.parse(raw);
-  } catch(e) {}
-  return null;
-}
-
-function getData() {
-  return localData || loadSavedData() || { items: [], note: '', loc: null };
-}
-
-async function setData(d) {
-  localData = d;
-  localStorage.setItem('admin_data', JSON.stringify(d));
-
-  // 同步到 GitHub
-  await pushToGithub(d);
-  updateSharedLink();
-}
-
-function getGitHubToken() {
-  return ghToken || initToken() || '';
-}
-
-async function pushToGithub(data) {
-  const token = getGitHubToken();
-  if (!token) {
-    addLog('⚠️ 需要 GitHub Token 才能同步。点击右下角✏️设置');
-    return;
-  }
-  const url = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/data.json`;
-
-  try {
-    // 先获取当前文件的 SHA（如果存在）
-    let sha = '';
-    try {
-      const resp = await fetch(url, {
-        headers: { 'Authorization': `token ${token}` }
-      });
-      const info = await resp.json();
-      if (info.sha) sha = info.sha;
-    } catch(e) {}
-
-    // 推送新内容
-    const content = btoa(unescape(encodeURIComponent(JSON.stringify(data, null, 2))));
-    const body = {
-      message: 'update data.json',
-      content: content,
-      branch: 'master'
-    };
-    if (sha) body.sha = sha;
-
-    const resp = await fetch(url, {
-      method: 'PUT',
-      headers: {
-        'Authorization': `token ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    const result = await resp.json();
-    if (resp.ok) {
-      addLog('✅ 数据已同步到 GitHub');
-    } else {
-      addLog('⚠️ GitHub 同步失败: ' + (result.message || '未知错误'));
-      console.warn('GitHub push failed:', result);
-    }
-  } catch(e) {
-    addLog('⚠️ 网络错误: ' + e.message);
+async function loadInitial() {
+  const r = await U.fetchData();
+  if (r && !r.unchanged && r.data) {
+    state = { items: r.data.items || [], note: r.data.note || '', loc: r.data.loc || null };
   }
 }
 
-function updateSharedLink() {
-  const link = document.getElementById('viewerLink');
-  const viewerUrl = window.location.href
-    .replace('admin.html', 'view.html')
-    .replace(/\/+$/, '')
-    .split('?')[0].split('#')[0] + '?t=' + Date.now();
-  link.value = viewerUrl;
-  return viewerUrl;
+async function saveState() {
+  const ok = await U.postData(state);
+  addLog(ok ? '✅ 已保存到服务器' : '⚠️ 保存失败,请检查网络');
 }
 
 // ===== 位置共享 =====
 let watchId = null;
-let isSharing = false;
 
 function updateLocationUI(loc) {
-  const nameEl = document.getElementById('locName');
-  const addrEl = document.getElementById('locAddr');
-  const timeEl = document.getElementById('locTime');
-  const badge = document.getElementById('locBadge');
-  const coords = document.getElementById('locCoords');
-
   if (!loc) {
-    nameEl.textContent = '尚未获取位置';
-    addrEl.textContent = '点击"开始共享位置"';
-    timeEl.textContent = '';
-    badge.className = 'loc-badge inactive';
-    badge.textContent = '离线';
-    coords.textContent = '--';
+    $('locName').textContent = '尚未获取位置';
+    $('locAddr').textContent = '点击"开始共享位置"';
+    $('locTime').textContent = '';
+    $('locBadge').className = 'loc-badge inactive';
+    $('locBadge').textContent = '离线';
+    $('locCoords').textContent = '--';
     return;
   }
-
-  const lat = loc.lat.toFixed(6);
-  const lng = loc.lng.toFixed(6);
-  nameEl.textContent = '当前共享位置';
-  addrEl.textContent = `精度 ±${Math.round(loc.accuracy)}米`;
-  timeEl.textContent = '更新于 ' + (loc.time || formatTime(new Date()));
-  badge.className = 'loc-badge active';
-  badge.textContent = '📍 在线';
-  coords.textContent = `${lat}, ${lng}`;
+  $('locName').textContent = '当前共享位置';
+  $('locAddr').textContent = '精度 ±' + Math.round(loc.accuracy) + '米';
+  $('locTime').textContent = '更新于 ' + (loc.time || U.formatTime(new Date()));
+  $('locBadge').className = 'loc-badge active';
+  $('locBadge').textContent = '📍 在线';
+  $('locCoords').textContent = loc.lat.toFixed(6) + ', ' + loc.lng.toFixed(6);
 }
 
-async function startSharing() {
+async function onPosition(pos) {
+  const loc = {
+    lat: pos.coords.latitude,
+    lng: pos.coords.longitude,
+    accuracy: pos.coords.accuracy,
+    time: U.formatTime(new Date())
+  };
+  state.loc = loc;
+  updateLocationUI(loc);
+  $('startShare').style.display = 'none';
+  $('stopShare').style.display = 'block';
+  await U.postData(state);
+  addLog('位置已更新: ' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4));
+}
+
+function onPositionError(err) {
+  alert('获取位置失败: ' + err.message + '\n请检查定位权限是否开启');
+}
+
+function startSharing() {
   if (!navigator.geolocation) { alert('浏览器不支持定位'); return; }
-
-  async function onPosition(pos) {
-    const loc = {
-      lat: pos.coords.latitude,
-      lng: pos.coords.longitude,
-      accuracy: pos.coords.accuracy,
-      time: formatTime(new Date())
-    };
-    isSharing = true;
-
-    // 更新数据
-    const data = getData();
-    data.loc = loc;
-    await setData(data);
-    updateLocationUI(loc);
-    updateSharedLink();
-    addLog('位置已更新: ' + loc.lat.toFixed(4) + ', ' + loc.lng.toFixed(4));
-
-    document.getElementById('startShare').style.display = 'none';
-    document.getElementById('stopShare').style.display = 'block';
-  }
-
-  function onError(err) {
-    console.warn('位置失败:', err.message);
-    alert('获取位置失败: ' + err.message + '\n请检查定位权限是否开启');
-  }
-
-  navigator.geolocation.getCurrentPosition(onPosition, onError, {
+  navigator.geolocation.getCurrentPosition(onPosition, onPositionError, {
     enableHighAccuracy: true, timeout: 15000
   });
-
-  // 持续追踪
   if (watchId) navigator.geolocation.clearWatch(watchId);
-  watchId = navigator.geolocation.watchPosition(onPosition, onError, {
+  watchId = navigator.geolocation.watchPosition(onPosition, onPositionError, {
     enableHighAccuracy: true, timeout: 30000, maximumAge: 10000
   });
 }
 
 function stopSharing() {
-  if (watchId) {
-    navigator.geolocation.clearWatch(watchId);
-    watchId = null;
-  }
-  isSharing = false;
-  document.getElementById('startShare').style.display = 'block';
-  document.getElementById('stopShare').style.display = 'none';
-  updateLocationUI(null);
+  if (watchId) { navigator.geolocation.clearWatch(watchId); watchId = null; }
+  $('startShare').style.display = 'block';
+  $('stopShare').style.display = 'none';
   addLog('位置共享已停止');
 }
 
-// ===== 行程管理 =====
-function renderQuickList(data) {
-  const el = document.getElementById('quickList');
-  if (!data.items || data.items.length === 0) {
-    el.innerHTML = '<div style="color:#555;font-size:13px;padding:8px 0;text-align:center;">暂无行程</div>';
-    return;
-  }
-
-  let html = '';
-  data.items.forEach((item, i) => {
-    html += `
-      <div class="timeline-item">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-time">${item.time}</div>
-          <div class="timeline-title">${item.title}</div>
-          ${item.desc ? `<div class="timeline-desc">${item.desc}</div>` : ''}
-        </div>
-        <div class="timeline-del" data-idx="${i}">✕</div>
-      </div>
-    `;
-  });
-  el.innerHTML = html;
-
-  // 删除事件
-  el.querySelectorAll('.timeline-del').forEach(btn => {
-    btn.addEventListener('click', async function() {
-      const idx = parseInt(this.dataset.idx);
-      const d = getData();
-      d.items.splice(idx, 1);
-      await setData(d);
-      renderQuickList(d);
-      updateSharedLink();
+// ===== 行程列表 =====
+function renderList() {
+  U.renderTimeline($('quickList'), state.items, { deletable: true, emptyText: '暂无行程' });
+  $('quickList').querySelectorAll('.timeline-del').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const idx = parseInt(btn.dataset.idx);
+      state.items.splice(idx, 1);
+      renderList();
+      await saveState();
     });
   });
 }
 
 // ===== Tab 切换 =====
 document.querySelectorAll('.edit-tab').forEach(tab => {
-  tab.addEventListener('click', function() {
+  tab.addEventListener('click', function () {
     document.querySelectorAll('.edit-tab').forEach(t => t.classList.remove('active'));
     document.querySelectorAll('.edit-panel').forEach(p => p.classList.remove('active'));
     this.classList.add('active');
-    document.getElementById('panel-' + this.dataset.tab).classList.add('active');
-
-    // 切换到 full 时填充内容
+    $('panel-' + this.dataset.tab).classList.add('active');
     if (this.dataset.tab === 'full') {
-      const data = getData();
-      const lines = data.items.map(i => `${i.time} ${i.title}${i.desc ? ' ' + i.desc : ''}`);
-      if (data.note) { lines.push(''); lines.push('==='); lines.push(data.note); }
-      document.getElementById('fullInput').value = lines.join('\n');
+      $('fullInput').value = U.stringifySchedule(state);
     }
   });
 });
 
 // ===== 快速添加 =====
-document.getElementById('addQuickItem').addEventListener('click', async function() {
-  const time = document.getElementById('quickTime').value.trim();
-  const title = document.getElementById('quickTitle').value.trim();
+$('addQuickItem').addEventListener('click', async () => {
+  const time = $('quickTime').value.trim();
+  const title = $('quickTitle').value.trim();
   if (!time || !title) { alert('请输入时间和事件'); return; }
-
-  const data = getData();
-  let desc = '';
-  let cleanTitle = title;
-  if (title.includes(' @')) {
-    const parts = title.split(' @');
-    cleanTitle = parts[0].trim();
-    desc = '@' + parts.slice(1).join(' @').trim();
+  let cleanTitle = title, desc = '';
+  const atIdx = title.indexOf(' @');
+  if (atIdx >= 0) {
+    cleanTitle = title.slice(0, atIdx).trim();
+    desc = '@' + title.slice(atIdx + 2).trim();
   }
-  data.items.push({ time, title: cleanTitle, desc, done: false });
-
-  // 按时间排序
-  data.items.sort((a, b) => a.time.localeCompare(b.time));
-
-  await setData(data);
-  renderQuickList(data);
-  updateSharedLink();
-  document.getElementById('quickTime').value = '';
-  document.getElementById('quickTitle').value = '';
+  state.items.push({ time, title: cleanTitle, desc, done: false });
+  state.items.sort((a, b) => a.time.localeCompare(b.time));
+  renderList();
+  $('quickTime').value = '';
+  $('quickTitle').value = '';
   addLog('已添加: ' + time + ' ' + cleanTitle);
+  await saveState();
 });
 
-// ===== 快速保存 =====
-document.getElementById('quickSave').addEventListener('click', async function() {
-  const note = document.getElementById('quickNote').value.trim();
-  const data = getData();
-  data.note = note;
-  await setData(data);
-  updateSharedLink();
+$('quickSave').addEventListener('click', async () => {
+  state.note = $('quickNote').value.trim();
+  await saveState();
   addLog('行程已保存');
 });
 
-// ===== 全部保存 =====
-document.getElementById('fullSave').addEventListener('click', async function() {
-  const text = document.getElementById('fullInput').value.trim();
+$('fullSave').addEventListener('click', async () => {
+  const text = $('fullInput').value.trim();
   if (!text) { alert('请输入行程'); return; }
-
-  const lines = text.split('\n');
-  const items = [];
-  let note = '';
-  let inNote = false;
-
-  for (const line of lines) {
-    const t = line.trim();
-    if (!t) continue;
-    if (t === '===') { inNote = true; continue; }
-    if (inNote) { note = (note ? note + '\n' : '') + t; continue; }
-
-    const tm = t.match(/^(\d{1,2}:\d{2})(?:\s*-\s*\d{1,2}:\d{2})?\s+(.+)/);
-    if (tm) {
-      let desc = '';
-      let title = tm[2].trim();
-      if (title.includes(' @')) {
-        const parts = title.split(' @');
-        title = parts[0].trim();
-        desc = '@' + parts.slice(1).join(' @').trim();
-      }
-      items.push({ time: tm[1], title, desc, done: false });
-    } else {
-      const hm = t.match(/预计到家\s*(\d{1,2}:\d{2})/);
-      if (hm) items.push({ time: hm[1], title: '预计到家', desc: '', done: false });
-    }
-  }
-
-  if (items.length === 0) { alert('请输入有效行程'); return; }
-
-  items.sort((a, b) => a.time.localeCompare(b.time));
-
-  const data = getData();
-  data.items = items;
-  data.note = note;
-  await setData(data);
-  renderQuickList(data);
-  updateSharedLink();
-  addLog('已更新 ' + items.length + ' 条行程');
-
-  // 切回快速面板
+  const parsed = U.parseScheduleText(text);
+  if (parsed.items.length === 0) { alert('请输入有效行程'); return; }
+  state.items = parsed.items;
+  state.note = parsed.note;
+  renderList();
+  $('quickNote').value = parsed.note;
   document.querySelector('[data-tab="quick"]').click();
-  document.getElementById('quickNote').value = note;
+  addLog('已更新 ' + parsed.items.length + ' 条行程');
+  await saveState();
 });
 
 // ===== 日志 =====
 function addLog(msg) {
-  const el = document.getElementById('logContent');
-  const time = formatTime(new Date());
-  el.innerHTML = `<div class="log-entry">[${time}] ${msg}</div>` + el.innerHTML;
-  document.getElementById('logSection').classList.add('show');
+  const el = $('logContent');
+  const time = U.formatTime(new Date());
+  el.innerHTML = '<div class="log-entry">[' + time + '] ' + U.escapeHtml(msg) + '</div>' + el.innerHTML;
+  $('logSection').classList.add('show');
 }
 
-document.getElementById('logToggle').addEventListener('click', function() {
-  const content = document.getElementById('logContent');
-  content.style.display = content.style.display === 'none' ? 'block' : 'none';
+$('logToggle').addEventListener('click', () => {
+  const c = $('logContent');
+  c.style.display = c.style.display === 'none' ? 'block' : 'none';
 });
 
 // ===== 复制链接 =====
-document.getElementById('copyLink').addEventListener('click', function() {
-  const input = document.getElementById('viewerLink');
+function updateSharedLink() {
+  const viewerUrl = window.location.href
+    .replace('admin.html', 'view.html')
+    .replace(/\/+$/, '')
+    .split('?')[0].split('#')[0];
+  $('viewerLink').value = viewerUrl;
+}
+
+$('copyLink').addEventListener('click', function () {
+  const input = $('viewerLink');
   input.select();
   input.setSelectionRange(0, 99999);
-  navigator.clipboard.writeText(input.value).then(() => {
+  const done = () => {
     this.textContent = '已复制';
     setTimeout(() => { this.textContent = '复制'; }, 2000);
-  }).catch(() => {
-    document.execCommand('copy');
-    this.textContent = '已复制';
-    setTimeout(() => { this.textContent = '复制'; }, 2000);
-  });
+  };
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(input.value).then(done).catch(done);
+  } else {
+    document.execCommand('copy'); done();
+  }
 });
 
 // ===== 初始化 =====
-document.getElementById('dateDisplay').textContent = todayStr();
-
-const initialData = getData();
-renderQuickList(initialData);
-if (initialData.note) document.getElementById('quickNote').value = initialData.note;
-if (initialData.loc) updateLocationUI(initialData.loc);
-if (initialData.loc) {
-  document.getElementById('startShare').style.display = 'none';
-  document.getElementById('stopShare').style.display = 'block';
-}
-
-updateSharedLink();
-
-// 按钮事件
-document.getElementById('startShare').addEventListener('click', startSharing);
-document.getElementById('stopShare').addEventListener('click', stopSharing);
-
-// 定时更新链接
-setInterval(() => {
+(async function init() {
+  $('dateDisplay').textContent = U.todayStr();
   updateSharedLink();
-  document.getElementById('dateDisplay').textContent = todayStr();
-}, 60000);
+  await loadInitial();
+  renderList();
+  if (state.note) $('quickNote').value = state.note;
+  if (state.loc) {
+    updateLocationUI(state.loc);
+    $('startShare').style.display = 'none';
+    $('stopShare').style.display = 'block';
+  }
+})();
 
-// 页面关闭时停止位置
-window.addEventListener('beforeunload', function() {
+$('startShare').addEventListener('click', startSharing);
+$('stopShare').addEventListener('click', stopSharing);
+
+setInterval(() => { $('dateDisplay').textContent = U.todayStr(); }, 60000);
+
+window.addEventListener('beforeunload', () => {
   if (watchId) navigator.geolocation.clearWatch(watchId);
 });
-
-console.log('📋 行程管理端已加载');
-console.log('📍 点击"开始共享位置"可实时更新位置');
 </script>
 </body>
 </html>
