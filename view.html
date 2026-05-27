@@ -31,16 +31,19 @@
   <div class="loc-coords" id="locCoords">--</div>
 </div>
 
-<div class="map-container h220" id="mapBox">
-  <iframe id="mapFrame" style="display:none;" allowfullscreen></iframe>
-  <div class="map-placeholder" id="mapPlaceholder">
+<div class="map-container" id="mapBox" style="min-height:120px;">
+  <div class="map-placeholder" id="mapPlaceholder" style="padding:24px;text-align:center;">
     <div class="icon">🗺️</div>
     <div class="hint">等待位置共享</div>
   </div>
-</div>
-
-<div class="map-link-box" id="mapDirectLinkBox" style="display:none;">
-  <a id="mapDirectLink" href="#" target="_blank">📱 点此在手机地图查看</a>
+  <a id="mapOpenBtn" href="#" target="_blank" style="display:none;width:100%;padding:16px;background:#1a3a5c;border-radius:8px;text-align:center;text-decoration:none;color:#4fc3f7;font-size:16px;box-sizing:border-box;">
+    <span style="font-size:28px;display:block;margin-bottom:6px;">📍</span>
+    点此在手机地图查看位置
+    <span style="display:block;font-size:11px;color:#666;margin-top:4px;">自动跳转高德/百度地图</span>
+  </a>
+  <a id="mapFallback" href="#" target="_blank" style="display:none;width:100%;padding:10px;margin-top:8px;background:#141420;border:1px solid #2a2a4a;border-radius:6px;text-align:center;text-decoration:none;color:#888;font-size:12px;box-sizing:border-box;">
+    高德打不开？点此用百度地图 →
+  </a>
 </div>
 
 <div class="section-title">⏰ 今日安排</div>
@@ -73,9 +76,8 @@ function updateLive(online) {
 function renderLocation(loc) {
   const $ = id => document.getElementById(id);
   const ph = $('mapPlaceholder');
-  const mf = $('mapFrame');
-  const dlBox = $('mapDirectLinkBox');
-  const dl = $('mapDirectLink');
+  const btn = $('mapOpenBtn');
+  const fb = $('mapFallback');
 
   if (!loc || !loc.lat) {
     $('locName').textContent = '位置未共享';
@@ -84,9 +86,9 @@ function renderLocation(loc) {
     $('locBadge').className = 'loc-badge offline';
     $('locBadge').textContent = '离线';
     $('locCoords').textContent = '--';
-    ph.style.display = 'flex';
-    mf.style.display = 'none';
-    dlBox.style.display = 'none';
+    ph.style.display = 'block';
+    btn.style.display = 'none';
+    fb.style.display = 'none';
     lastLocKey = '';
     return;
   }
@@ -99,16 +101,15 @@ function renderLocation(loc) {
   $('locCoords').textContent = loc.lat.toFixed(6) + ', ' + loc.lng.toFixed(6);
 
   ph.style.display = 'none';
-  mf.style.display = 'block';
-  dlBox.style.display = 'block';
+  btn.style.display = 'block';
+  fb.style.display = 'block';
 
-  // 只有位置真变了才换 iframe.src,避免地图反复刷
   const key = loc.lat.toFixed(5) + ',' + loc.lng.toFixed(5);
   if (key !== lastLocKey) {
-    mf.src = U.osmEmbedUrl(loc);
+    btn.href = U.amapUrl(loc, '她的位置');
+    fb.href = 'https://api.map.baidu.com/marker?location=' + loc.lat + ',' + loc.lng + '&title=她的位置&content=共享位置&output=html';
     lastLocKey = key;
   }
-  dl.href = U.amapUrl(loc, '她的位置');
 }
 
 function render(data) {
